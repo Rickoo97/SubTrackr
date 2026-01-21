@@ -3,7 +3,7 @@
 Een moderne full-stack applicatie om maandelijkse abonnementen bij te houden. Gebouwd met focus op Clean Code, moderne UI/UX en een robuuste architectuur.
 
 ![SubTrackR Dashboard](public/screenshots/dashboard-preview.png)
-(public/screenshots/dashboard-preview2.png)
+![SubTrackR Dashboard-Whitemode](public/screenshots/dashboard-preview2.png)
 
 ## 🛠️ Tech Stack
 
