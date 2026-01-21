@@ -45,4 +45,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    // Relatie: Een User heeft meerdere Subscriptions
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
 }
