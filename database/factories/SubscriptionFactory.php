@@ -16,6 +16,7 @@ class SubscriptionFactory extends Factory
             'currency' => 'EUR',
             'next_payment_date' => fake()->dateTimeBetween('now', '+1 month'),
             'status' => fake()->randomElement(['active', 'active', 'active', 'cancelled']), // 75% kans op active
+            'category' => fake()->randomElement(['Entertainment', 'Werk', 'Vervoer', 'Huis', 'Sport']),
             'logo_color' => fake()->randomElement(['bg-red-500', 'bg-green-500', 'bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-pink-500']),
         ];
     }

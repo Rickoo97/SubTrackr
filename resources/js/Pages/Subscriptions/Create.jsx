@@ -11,6 +11,7 @@ export default function Create({ auth }) {
         name: "",
         price: "",
         next_payment_date: "",
+        category: "Entertainment",
     });
 
     const submit = (e) => {
@@ -53,6 +54,35 @@ export default function Create({ auth }) {
                                 <InputError
                                     className="mt-2"
                                     message={errors.name}
+                                />
+                            </div>
+
+                            {/* Categorie Selectie */}
+                            <div>
+                                <InputLabel
+                                    htmlFor="category"
+                                    value="Categorie"
+                                />
+                                <select
+                                    id="category"
+                                    className="mt-1 block w-full border-gray-300 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                                    value={data.category}
+                                    onChange={(e) =>
+                                        setData("category", e.target.value)
+                                    }
+                                >
+                                    <option value="Entertainment">
+                                        Entertainment
+                                    </option>
+                                    <option value="Werk">Werk</option>
+                                    <option value="Vervoer">Vervoer</option>
+                                    <option value="Huis">Huis</option>
+                                    <option value="Sport">Sport</option>
+                                    <option value="Overig">Overig</option>
+                                </select>
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.category}
                                 />
                             </div>
 

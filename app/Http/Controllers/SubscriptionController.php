@@ -5,20 +5,30 @@ namespace App\Http\Controllers;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionController extends Controller
 {
     // 1. Dashboard (Lijst)
-    public function index()
-    {
-        $subscriptions = Subscription::where('user_id', auth()->id())
-            ->orderBy('next_payment_date', 'asc')
-            ->get();
+public function index()
+{
+    // 1. Haal de gewone lijst op (voor de tabel)
+    $subscriptions = Subscription::where('user_id', auth()->id())
+        ->orderBy('next_payment_date', 'asc')
+        ->get();
 
-        return Inertia::render('Dashboard', [
-            'subscriptions' => $subscriptions
-        ]);
-    }
+    // 2. Bereken data voor de grafiek (Groepeer op categorie en tel prijzen op)
+    $chartData = Subscription::where('user_id', auth()->id())
+        ->where('status', 'active')
+        ->select('category', DB::raw('sum(price) as total'))
+        ->groupBy('category')
+        ->get();
+
+    return Inertia::render('Dashboard', [
+        'subscriptions' => $subscriptions,
+        'chartData' => $chartData // <--- Stuur dit mee naar React
+    ]);
+}
 
     // 2. Toon aanmaak pagina
     public function create()
@@ -33,6 +43,7 @@ class SubscriptionController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'next_payment_date' => 'required|date',
+            'category' => 'required|string',
         ]);
 
         $request->user()->subscriptions()->create([
@@ -69,7 +80,8 @@ class SubscriptionController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'next_payment_date' => 'required|date',
-            'status' => 'required|in:active,cancelled'
+            'status' => 'required|in:active,cancelled',
+            'category' => 'required|string',
         ]);
 
         $subscription->update($validated);

@@ -3,8 +3,16 @@ import Dropdown from "@/Components/Dropdown";
 import { Head } from "@inertiajs/react";
 import ThemeToggle from "@/Components/ThemeToggle"; // Importeer de knop
 import { Link } from "@inertiajs/react";
+import {
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip,
+    ResponsiveContainer,
+    Legend,
+} from "recharts";
 
-export default function Dashboard({ auth, subscriptions }) {
+export default function Dashboard({ auth, subscriptions, chartData }) {
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat("nl-NL", {
             style: "currency",
@@ -22,6 +30,8 @@ export default function Dashboard({ auth, subscriptions }) {
     const totalMonthly = subscriptions
         .filter((sub) => sub.status === "active")
         .reduce((acc, sub) => acc + parseFloat(sub.price), 0);
+
+    const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"]; // Indigo, Emerald, Amber, Red, Violet
 
     return (
         <AuthenticatedLayout
@@ -42,60 +52,121 @@ export default function Dashboard({ auth, subscriptions }) {
             <div className="min-h-screen bg-gray-100 dark:bg-slate-900 text-gray-900 dark:text-gray-100 py-12 transition-colors duration-300">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* KPI Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        {/* Card 1 */}
-                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm dark:shadow-lg transition-colors">
-                            <div className="text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
-                                Maandelijkse lasten
-                            </div>
-                            <div className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                                {formatCurrency(totalMonthly)}
-                            </div>
-                            <div className="text-emerald-500 dark:text-emerald-400 text-xs mt-2 flex items-center gap-1">
-                                <span>● Stabiel</span>
-                            </div>
-                        </div>
-
-                        {/* Card 2 */}
-                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm dark:shadow-lg transition-colors">
-                            <div className="text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
-                                Actieve Services
-                            </div>
-                            <div className="text-3xl font-bold text-gray-900 dark:text-white mt-2">
-                                {
-                                    subscriptions.filter(
-                                        (s) => s.status === "active",
-                                    ).length
-                                }
-                            </div>
-                            <div className="text-gray-500 dark:text-slate-500 text-xs mt-2">
-                                Van de {subscriptions.length} totaal
-                            </div>
-                        </div>
-
-                        {/* Card 3 (Primary Color blijft altijd gekleurd) */}
-                        <div className="bg-indigo-600 dark:bg-indigo-600 rounded-xl border border-indigo-500 p-6 shadow-lg text-white">
-                            <div className="text-indigo-100 text-xs font-bold uppercase tracking-wider">
-                                Eerstvolgende afschrijving
-                            </div>
-                            {subscriptions.length > 0 ? (
-                                <>
-                                    <div className="text-3xl font-bold mt-2 text-white">
-                                        {subscriptions[0].name}
-                                    </div>
-                                    <div className="text-indigo-100 text-sm mt-1">
-                                        {formatCurrency(subscriptions[0].price)}{" "}
-                                        op{" "}
-                                        {formatDate(
-                                            subscriptions[0].next_payment_date,
-                                        )}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="text-lg font-bold mt-2">
-                                    Geen data
+                    {/* Bovenste Sectie: KPI's + Grafiek */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        {/* LINKERKANT: De 3 KPI Kaarten (nemen 2 kolommen in beslag op grote schermen) */}
+                        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                            {/* Card 1: Total Cost */}
+                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm transition-colors">
+                                <div className="text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
+                                    Maandelijkse lasten
                                 </div>
-                            )}
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+                                    {formatCurrency(totalMonthly)}
+                                </div>
+                                <div className="text-emerald-500 text-xs mt-2">
+                                    ● Stabiel
+                                </div>
+                            </div>
+
+                            {/* Card 2: Active Subs */}
+                            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm transition-colors">
+                                <div className="text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
+                                    Actieve Services
+                                </div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-white mt-2">
+                                    {
+                                        subscriptions.filter(
+                                            (s) => s.status === "active",
+                                        ).length
+                                    }
+                                </div>
+                                <div className="text-gray-500 text-xs mt-2">
+                                    Abonnementen
+                                </div>
+                            </div>
+
+                            {/* Card 3: Next Payment */}
+                            <div className="bg-indigo-600 rounded-xl border border-indigo-500 p-6 shadow-lg text-white">
+                                <div className="text-indigo-100 text-xs font-bold uppercase tracking-wider">
+                                    Eerstvolgende
+                                </div>
+                                {subscriptions.length > 0 ? (
+                                    <>
+                                        <div className="text-xl font-bold mt-2 truncate">
+                                            {subscriptions[0].name}
+                                        </div>
+                                        <div className="text-indigo-100 text-sm mt-1">
+                                            {formatDate(
+                                                subscriptions[0]
+                                                    .next_payment_date,
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-lg font-bold mt-2">
+                                        Geen data
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* RECHTERKANT: De Grafiek (neemt 1 kolom in beslag) */}
+                        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 shadow-sm flex flex-col items-center justify-center transition-colors">
+                            <h3 className="text-sm font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-4 self-start">
+                                Uitgaven per Categorie
+                            </h3>
+
+                            <div className="h-48 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={chartData} // <-- Hier komt de data uit je controller
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={40} // Dit maakt het een "Donut"
+                                            outerRadius={60}
+                                            paddingAngle={5}
+                                            dataKey="total"
+                                            nameKey="category"
+                                        >
+                                            {chartData &&
+                                                chartData.map(
+                                                    (entry, index) => (
+                                                        <Cell
+                                                            key={`cell-${index}`}
+                                                            fill={
+                                                                COLORS[
+                                                                    index %
+                                                                        COLORS.length
+                                                                ]
+                                                            }
+                                                            stroke="none"
+                                                        />
+                                                    ),
+                                                )}
+                                        </Pie>
+                                        <Tooltip
+                                            formatter={(value) =>
+                                                formatCurrency(value)
+                                            }
+                                            contentStyle={{
+                                                backgroundColor: "#1f2937",
+                                                borderColor: "#374151",
+                                                color: "#fff",
+                                            }}
+                                            itemStyle={{ color: "#fff" }}
+                                        />
+                                        <Legend
+                                            iconType="circle"
+                                            layout="vertical"
+                                            verticalAlign="middle"
+                                            align="right"
+                                            wrapperStyle={{ fontSize: "10px" }}
+                                        />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
 

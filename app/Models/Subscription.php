@@ -17,7 +17,8 @@ class Subscription extends Model
         'currency', 
         'next_payment_date', 
         'status', 
-        'logo_color'
+        'logo_color',
+        'category'
     ];
 
     // 2. Dit is de relatie. Hiermee zeggen we: "Dit abonnement hoort bij één User".
